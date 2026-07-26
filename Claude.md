@@ -23,7 +23,7 @@ design decision below.
 - **Contact:** Priya Desai, VP of Engineering.
 - **Pain points:** self-managed on-prem Kubernetes cluster, ~1/3 of 2 backend
   engineers' time spent on node patching/upgrades, a 14-hour outage in March from a
-  control-plane failure, HIPAA-aligned audit pressure, AWS (EKS + Fargate) already
+  control-plane failure, Privacy Act / APP-aligned audit pressure, AWS (EKS + Fargate) already
   pitching them, Q4 renewal/budget decision looming.
 - **Ask:** architecture proposal + working POC + cost predictability numbers + data
   security story + direct handling of migration risk / vendor lock-in objections.
@@ -114,7 +114,7 @@ being evaluated for a CE role.
 6. **Discovery-style thinking** — the presentation opens by reframing the
    customer's stated pain in their own words before pitching anything.
 7. **Roadmap/program thinking** — closing slide: Phase 1 (this POC) → Phase 2
-   (pipeline + full HIPAA controls) → Phase 3 (production cutover).
+   (pipeline + full Privacy Act / APP controls) → Phase 3 (production cutover).
 
 Deliberately deferred (named as gaps, not hidden): CI/CD pipeline, full VPC-SC,
 CMEK, audit logging, Dataflow pipeline.
