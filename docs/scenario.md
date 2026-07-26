@@ -17,8 +17,13 @@ put together something concrete before we meet again in three weeks.
 
 **Who we are:** Blissey Health Analytics ingests claims and patient-outcomes data from
 ~40 regional clinics and runs ML models that flag high-risk patients for care teams.
-It's not real-time-critical, but doctors do check the dashboard daily, and delays or
-downtime erode trust fast.
+Each clinic uploads its claims batch on its own schedule — some at 6am, some late at
+night — so our risk-scoring pipeline sees genuinely bursty, uneven load throughout the
+day, followed by long quiet periods in between. The dashboard itself is low, steady
+traffic (doctors checking daily), but the scoring workload underneath is spiky and hard
+to size for statically. We're also planning to onboard another 40+ clinics over the
+next 12–18 months, which means ingestion volume is going to roughly double and we can't
+predict exactly when each new clinic comes online.
 
 **Current state:** Everything runs on a self-managed Kubernetes cluster on-prem,
 provisioned two years ago by a contractor who's no longer with us. Our two backend
@@ -37,8 +42,9 @@ on EKS + Fargate.
    specifically addressing why we shouldn't just run vanilla GKE ourselves again
    (that's basically what got us into this mess).
 2. A working proof-of-concept — doesn't need our real data, but should show autoscaling
-   under load, and ideally show how node/OS patching and upgrades stop being our team's
-   problem.
+   under load (specifically the kind of bursty batch-ingestion load we actually see, not
+   just synthetic HTTP traffic), and ideally show how node/OS patching and upgrades stop
+   being our team's problem.
 3. Some way to show cost predictability — our CFO will ask for numbers, not vibes.
 4. A plan for how we'd handle sensitive health data controls (even at a POC level, show you've thought about it — network policy, IAM, encryption, whatever's relevant).
 5. Please keep the presentation to 10 minutes technical + Q&A. My engineers will be in the room and they will push back, especially on migration risk and lock-in. Don't dodge that — address it directly.
@@ -54,7 +60,7 @@ Priya
 
 ## Requirements checklist extracted from this email
 - [ ] Architecture proposal, explicitly justifying platform vs. self-managed GKE
-- [ ] Working POC — not just slides — showing autoscaling under load
+- [ ] Working POC — not just slides — showing autoscaling under bursty batch-ingestion load (not e-commerce spike fiction)
 - [ ] Show node/OS patching stops being their team's problem
 - [ ] Cost predictability numbers (real, not hand-waved)
 - [ ] Privacy Act / APP-aligned controls story: network policy, IAM, encryption at minimum
