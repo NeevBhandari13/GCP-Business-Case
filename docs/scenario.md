@@ -29,7 +29,11 @@ predict exactly when each new clinic comes online.
 provisioned two years ago by a contractor who's no longer with us. Our two backend
 engineers spend roughly a third of their time just patching nodes, managing upgrades,
 and troubleshooting cluster issues instead of building features. We had a control-plane
-failure in March that took the dashboard down for 14 hours.
+failure in March that took the dashboard down for 14 hours. We're also running a
+self-managed Postgres instance on the same cluster — app state, a few lookup tables
+the risk-scoring service reads at runtime, and some session data. Nobody's tested a
+restore since the contractor left, and we have no documented backup retention policy,
+which auditors flagged in the last review.
 
 **Why we're evaluating cloud now:** Our board wants predictable costs and less
 operational risk. We're also under increasing pressure to demonstrate Privacy Act / APP-aligned
@@ -67,3 +71,4 @@ Priya
 - [ ] 20 min technical + 10 min Q&A format
 - [ ] Direct handling of migration risk and vendor lock-in objections
 - [ ] Substance over slides — bias toward something real and demoable
+- [ ] Managed Postgres (Cloud SQL) — untested backups and no retention policy are audit gaps; show this gets solved
