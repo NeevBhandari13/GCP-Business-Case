@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: blissey
+
+---
+# Kubernetes SA annotated with the GCP SA — this is the Workload Identity link.
+# No static key file anywhere in this manifest.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: risk-scorer
+  namespace: blissey
+  annotations:
+    iam.gke.io/gcp-service-account: risk-scorer@PROJECT_ID.iam.gserviceaccount.com
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: risk-scorer
+  namespace: blissey
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: risk-scorer
+  # blueprint for pods 
+  template:
+    metadata:
+      labels:
+        app: risk-scorer
+    spec:
+      serviceAccountName: risk-scorer
+
+      containers:
+        - name: app
+          image: australia-southeast2-docker.pkg.dev/PROJECT_ID/blissey-app/risk-scorer:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: GCP_PROJECT_ID
+              value: "PROJECT_ID"
+            - name: DB_HOST
+              value: "127.0.0.1"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_NAME
+              value: "blissey"
+            - name: DB_USER
+              value: "blissey_app"
+            - name: DB_SECRET_ID
+              value: "blissey-db-password"
+          # Autopilot bills on requests and won't schedule without them.
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+
+        # Cloud SQL Auth Proxy sidecar — app connects to localhost:5432,
+        # proxy handles the mTLS tunnel to Cloud SQL. No public IP on the DB.
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
+          args:
+            - "--structured-logs"
+            - "--port=3306"
+            - "PROJECT_ID:australia-southeast2:blissey-postgres"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            runAsNonRoot: true
