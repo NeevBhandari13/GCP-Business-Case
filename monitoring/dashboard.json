@@ -1,0 +1,138 @@
+{
+  "displayName": "Blissey Risk Scoring Service",
+  "mosaicLayout": {
+    "columns": 12,
+    "tiles": [
+      {
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "Pod CPU utilisation (% of request)",
+          "xyChart": {
+            "dataSets": [
+              {
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"kubernetes.io/container/cpu/request_utilization\" resource.type=\"k8s_container\" resource.label.\"namespace_name\"=\"blissey\" resource.label.\"container_name\"=\"app\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_MEAN",
+                      "groupByFields": ["resource.label.pod_name"]
+                    }
+                  }
+                },
+                "plotType": "LINE",
+                "legendTemplate": "${resource.label.pod_name}"
+              }
+            ],
+            "yAxis": {
+              "label": "CPU utilisation ratio",
+              "scale": "LINEAR"
+            },
+            "thresholds": [
+              {
+                "value": 0.6,
+                "label": "HPA trigger (60%)",
+                "color": "YELLOW",
+                "direction": "ABOVE"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "xPos": 6,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "Pod memory utilisation (% of request)",
+          "xyChart": {
+            "dataSets": [
+              {
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"kubernetes.io/container/memory/request_utilization\" resource.type=\"k8s_container\" resource.label.\"namespace_name\"=\"blissey\" resource.label.\"container_name\"=\"app\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_MEAN",
+                      "groupByFields": ["resource.label.pod_name"]
+                    }
+                  }
+                },
+                "plotType": "LINE",
+                "legendTemplate": "${resource.label.pod_name}"
+              }
+            ],
+            "yAxis": {
+              "label": "Memory utilisation ratio",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "yPos": 4,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "Running pod count (risk-scorer)",
+          "xyChart": {
+            "dataSets": [
+              {
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"kubernetes.io/pod/active_object_count\" resource.type=\"k8s_cluster\" metric.label.\"namespace_name\"=\"blissey\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM"
+                    }
+                  }
+                },
+                "plotType": "STACKED_AREA"
+              }
+            ],
+            "yAxis": {
+              "label": "Pod count",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      },
+      {
+        "xPos": 6,
+        "yPos": 4,
+        "width": 6,
+        "height": 4,
+        "widget": {
+          "title": "Container restart count",
+          "xyChart": {
+            "dataSets": [
+              {
+                "timeSeriesQuery": {
+                  "timeSeriesFilter": {
+                    "filter": "metric.type=\"kubernetes.io/container/restart_count\" resource.type=\"k8s_container\" resource.label.\"namespace_name\"=\"blissey\"",
+                    "aggregation": {
+                      "alignmentPeriod": "60s",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "groupByFields": ["resource.label.container_name"]
+                    }
+                  }
+                },
+                "plotType": "LINE",
+                "legendTemplate": "${resource.label.container_name}"
+              }
+            ],
+            "yAxis": {
+              "label": "Restarts / min",
+              "scale": "LINEAR"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

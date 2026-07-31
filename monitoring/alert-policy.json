@@ -1,0 +1,34 @@
+{
+  "displayName": "Blissey — high CPU utilisation",
+  "documentation": {
+    "content": "The risk-scoring service is sustaining CPU above 80% of its requested allocation. HPA should be scaling, but if pod count is already at maximum (8) this indicates the service is under-resourced for current load. Check the Blissey dashboard for pod count and consider raising HPA maxReplicas.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [
+    {
+      "displayName": "Container CPU utilisation > 80% for 2 min",
+      "conditionThreshold": {
+        "filter": "metric.type=\"kubernetes.io/container/cpu/request_utilization\" resource.type=\"k8s_container\" resource.label.\"namespace_name\"=\"blissey\" resource.label.\"container_name\"=\"app\"",
+        "aggregations": [
+          {
+            "alignmentPeriod": "60s",
+            "perSeriesAligner": "ALIGN_MEAN",
+            "crossSeriesReducer": "REDUCE_MEAN"
+          }
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0.8,
+        "duration": "120s",
+        "trigger": {
+          "count": 1
+        }
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "1800s"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "severity": "WARNING"
+}
