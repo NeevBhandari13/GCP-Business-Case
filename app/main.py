@@ -3,7 +3,7 @@ import os
 import time
 from contextlib import asynccontextmanager
 
-import asyncpg
+import aiomysql
 from fastapi import FastAPI, HTTPException
 from google.cloud import secretmanager
 from pydantic import BaseModel
@@ -11,7 +11,7 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-_pool: asyncpg.Pool = None
+_pool: aiomysql.Pool = None
 
 
 def _fetch_secret(project_id: str, secret_id: str) -> str:
@@ -22,21 +22,21 @@ def _fetch_secret(project_id: str, secret_id: str) -> str:
     return response.payload.data.decode("utf-8")
 
 
-async def _init_db(pool: asyncpg.Pool) -> None:
+async def _init_db(pool: aiomysql.Pool) -> None:
     async with pool.acquire() as conn:
-        await conn.execute("""
-            CREATE TABLE IF NOT EXISTS scoring_events (
-                id          SERIAL PRIMARY KEY,
-                patient_id  TEXT NOT NULL,
-                clinic_id   TEXT NOT NULL,
-                risk_score  FLOAT NOT NULL,
-                risk_tier   TEXT NOT NULL,
-                scored_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
-            )
-        """)
-        await conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_scoring_events_patient ON scoring_events(patient_id)"
-        )
+        async with conn.cursor() as cur:
+            await cur.execute("""
+                CREATE TABLE IF NOT EXISTS scoring_events (
+                    id          INT AUTO_INCREMENT PRIMARY KEY,
+                    patient_id  VARCHAR(255) NOT NULL,
+                    clinic_id   VARCHAR(255) NOT NULL,
+                    risk_score  FLOAT NOT NULL,
+                    risk_tier   VARCHAR(10) NOT NULL,
+                    scored_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_patient (patient_id)
+                )
+            """)
+        await conn.commit()
 
 
 @asynccontextmanager
@@ -47,19 +47,21 @@ async def lifespan(app: FastAPI):
 
     db_password = _fetch_secret(project_id, secret_id)
 
-    _pool = await asyncpg.create_pool(
+    _pool = await aiomysql.create_pool(
         host=os.environ.get("DB_HOST", "127.0.0.1"),
-        port=int(os.environ.get("DB_PORT", "5432")),
-        database=os.environ.get("DB_NAME", "blissey"),
+        port=int(os.environ.get("DB_PORT", "3306")),
+        db=os.environ.get("DB_NAME", "blissey"),
         user=os.environ.get("DB_USER", "blissey_app"),
         password=db_password,
-        min_size=2,
-        max_size=10,
+        minsize=2,
+        maxsize=10,
+        autocommit=False,
     )
     await _init_db(_pool)
     logger.info("Database pool ready")
     yield
-    await _pool.close()
+    _pool.close()
+    await _pool.wait_closed()
 
 
 app = FastAPI(title="Blissey Risk Scoring Service", lifespan=lifespan)
@@ -124,16 +126,15 @@ async def score(record: PatientRecord):
     tier = _tier(risk_score)
 
     async with _pool.acquire() as conn:
-        await conn.execute(
-            """
-            INSERT INTO scoring_events (patient_id, clinic_id, risk_score, risk_tier)
-            VALUES ($1, $2, $3, $4)
-            """,
-            record.patient_id,
-            record.clinic_id,
-            risk_score,
-            tier,
-        )
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                INSERT INTO scoring_events (patient_id, clinic_id, risk_score, risk_tier)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (record.patient_id, record.clinic_id, risk_score, tier),
+            )
+        await conn.commit()
 
     logger.info(
         "scored patient=%s clinic=%s score=%s tier=%s",
@@ -151,16 +152,18 @@ async def score(record: PatientRecord):
 @app.get("/scores/{patient_id}")
 async def get_scores(patient_id: str):
     async with _pool.acquire() as conn:
-        rows = await conn.fetch(
-            """
-            SELECT patient_id, clinic_id, risk_score, risk_tier, scored_at
-            FROM scoring_events
-            WHERE patient_id = $1
-            ORDER BY scored_at DESC
-            LIMIT 20
-            """,
-            patient_id,
-        )
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            await cur.execute(
+                """
+                SELECT patient_id, clinic_id, risk_score, risk_tier, scored_at
+                FROM scoring_events
+                WHERE patient_id = %s
+                ORDER BY scored_at DESC
+                LIMIT 20
+                """,
+                (patient_id,),
+            )
+            rows = await cur.fetchall()
     if not rows:
         raise HTTPException(status_code=404, detail="No scores found for this patient")
-    return [dict(r) for r in rows]
+    return rows

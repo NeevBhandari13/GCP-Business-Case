@@ -1,2 +1,8 @@
 /working
+plan.md
 
+# Terraform state — contains plaintext secrets, never commit
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+.terraform.lock.hcl
