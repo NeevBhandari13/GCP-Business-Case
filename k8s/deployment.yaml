@@ -79,7 +79,7 @@ spec:
           args:
             - "--structured-logs"
             - "--port=3306"
-            - "PROJECT_ID:australia-southeast2:blissey-postgres"
+            - "PROJECT_ID:australia-southeast2:blissey-MySQL"
           resources:
             requests:
               cpu: "250m"

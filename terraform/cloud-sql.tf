@@ -20,10 +20,10 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 }
 
 # ---------------------------------------------------------------------------
-# Cloud SQL — Postgres 15, private IP only, no public endpoint
+# Cloud SQL — MySQL 15, private IP only, no public endpoint
 # ---------------------------------------------------------------------------
 
-resource "google_sql_database_instance" "postgres" {
+resource "google_sql_database_instance" "MySQL" {
   name             = var.db_instance_name
   database_version = "MYSQL_8_0"
   region           = var.region
@@ -57,11 +57,11 @@ resource "google_sql_database_instance" "postgres" {
 
 resource "google_sql_database" "app_db" {
   name     = var.db_name
-  instance = google_sql_database_instance.postgres.name
+  instance = google_sql_database_instance.MySQL.name
 }
 
 resource "google_sql_user" "app_user" {
   name     = var.db_user
-  instance = google_sql_database_instance.postgres.name
+  instance = google_sql_database_instance.MySQL.name
   password = random_password.db_password.result
 }

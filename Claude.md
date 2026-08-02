@@ -20,7 +20,7 @@ design decision below.
 
 - **Company:** Blissey Health Analytics — ingests claims + patient-outcomes data
   from ~40 regional clinics, runs ML models to flag high-risk patients for care teams.
-- **Contact:** Priya Desai, VP of Engineering.
+- **Contact:** John Smith, VP of Engineering.
 - **Pain points:** self-managed on-prem Kubernetes cluster, ~1/3 of 2 backend
   engineers' time spent on node patching/upgrades, a 14-hour outage in March from a
   control-plane failure, Privacy Act / APP-aligned audit pressure, AWS (EKS + Fargate) already
@@ -58,7 +58,7 @@ Clinics (simulated data feed)
    → GKE Autopilot workloads:
         - risk-scoring service (FastAPI, toy model) [BUILT]
         - dashboard API                              [diagrammed, not built]
-   → Cloud SQL (Postgres) for app state              [optional in POC]
+   → Cloud SQL (MySQL) for app state              [optional in POC]
    → Cloud Load Balancing + Cloud Armor              [diagrammed, not built]
    → Cloud Monitoring/Logging                        [BUILT — dashboard + 1 alert]
    → Secret Manager for credentials                  [BUILT]

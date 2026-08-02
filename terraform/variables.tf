@@ -13,7 +13,7 @@ variable "cluster_name" {
 }
 
 variable "db_instance_name" {
-  default = "blissey-postgres"
+  default = "blissey-MySQL"
 }
 
 variable "db_name" {

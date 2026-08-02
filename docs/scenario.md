@@ -5,7 +5,7 @@ decision as traceable back to a line in this email.
 
 ---
 
-**From:** Priya Desai, VP of Engineering — Blissey Health Analytics
+**From:** John Smith, VP of Engineering — Blissey Health Analytics
 **To:** [You], Customer Engineer, Google Cloud
 **Cc:** Dan Torres (Account Executive, Google Cloud)
 **Subject:** Re: Follow-up from our call — architecture review before Q4 renewal decision
@@ -30,7 +30,7 @@ provisioned two years ago by a contractor who's no longer with us. Our two backe
 engineers spend roughly a third of their time just patching nodes, managing upgrades,
 and troubleshooting cluster issues instead of building features. We had a control-plane
 failure in March that took the dashboard down for 14 hours. We're also running a
-self-managed Postgres instance on the same cluster — app state, a few lookup tables
+self-managed MySQL instance on the same cluster — app state, a few lookup tables
 the risk-scoring service reads at runtime, and some session data. Nobody's tested a
 restore since the contractor left, and we have no documented backup retention policy,
 which auditors flagged in the last review.
@@ -58,7 +58,7 @@ something real, even if small.
 
 Thanks — looking forward to it.
 
-Priya
+John
 
 ---
 
@@ -71,4 +71,4 @@ Priya
 - [ ] 20 min technical + 10 min Q&A format
 - [ ] Direct handling of migration risk and vendor lock-in objections
 - [ ] Substance over slides — bias toward something real and demoable
-- [ ] Managed Postgres (Cloud SQL) — untested backups and no retention policy are audit gaps; show this gets solved
+- [ ] Managed MySQL (Cloud SQL) — untested backups and no retention policy are audit gaps; show this gets solved

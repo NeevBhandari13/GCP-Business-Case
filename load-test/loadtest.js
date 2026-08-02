@@ -1,7 +1,7 @@
 /**
  * Blissey Health Analytics — k6 load test
  *
- * Simulates the bursty batch-ingestion pattern from Priya's email:
+ * Simulates the bursty batch-ingestion pattern from John's email:
  * ~40 clinics uploading on their own schedules → genuine burst-then-idle,
  * not a synthetic e-commerce spike.
  *
