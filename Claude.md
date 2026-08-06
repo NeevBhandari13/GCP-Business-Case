@@ -27,7 +27,7 @@ design decision below.
   pitching them, Q4 renewal/budget decision looming.
 - **Ask:** architecture proposal + working POC + cost predictability numbers + data
   security story + direct handling of migration risk / vendor lock-in objections.
-  20 min technical presentation + 10 min Q&A, engineers in the room will push back.
+10 min technical presentation + Q&A, engineers in the room will push back.
 
 Full text: `docs/scenario.md`.
 
